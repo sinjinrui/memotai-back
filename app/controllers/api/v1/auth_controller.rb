@@ -1,6 +1,5 @@
 # app/controllers/api/v1/auth_controller.rb
 class Api::V1::AuthController < ApplicationController
-
   def signup
     user = User.new(user_params)
 
