@@ -14,11 +14,10 @@ class Card < ApplicationRecord
     validates :character_code
     validates :enemy_code
   end
-  validates :text, length: { maximum: 140}
+  validates :text, length: { maximum: 140 }
 
-  acts_as_list scope: [:user_id, :character_code, :enemy_code]
+  acts_as_list scope: [ :user_id, :character_code, :enemy_code ]
 
   enumerize :character_code, in: CODE_LIST, scope: true # card.with_character_code("001")
   enumerize :enemy_code, in: CODE_LIST, scope: true # card.with_enemy_code("002")
-
 end
