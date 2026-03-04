@@ -1,0 +1,24 @@
+class Card < ApplicationRecord
+  extend Enumerize
+
+  CODE_LIST = %w[
+    001 002 003 004 005 006 007 008 009 010
+    011 012 013 014 015 016 017 018 019 020
+    021 022 023 024 025 026 027 028 029
+  ].freeze
+
+  belongs_to :user
+
+  with_options presence: true do
+    validates :user_id
+    validates :character_code
+    validates :enemy_code
+  end
+  validates :text, length: { maximum: 140}
+
+  acts_as_list scope: [:user_id, :character_code, :enemy_code]
+
+  enumerize :character_code, in: CODE_LIST, scope: true # card.with_character_code("001")
+  enumerize :enemy_code, in: CODE_LIST, scope: true # card.with_enemy_code("002")
+
+end

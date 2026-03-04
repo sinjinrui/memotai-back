@@ -31,7 +31,10 @@ gem "thruster", require: false
 gem "bcrypt"
 gem "jwt"
 gem "pry-rails"
+gem 'pry-byebug'
 gem "rack-cors"
+gem "acts_as_list"
+gem "enumerize"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"

@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_28_095303) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_01_080240) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "cards", force: :cascade do |t|
+    t.text "text", null: false
+    t.bigint "user_id", null: false
+    t.string "character_code", null: false
+    t.string "enemy_code", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "character_code", "enemy_code", "position"], name: "idx_on_user_id_character_code_enemy_code_position_7b616b1da1"
+    t.index ["user_id"], name: "index_cards_on_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "login_id", null: false
@@ -22,4 +35,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_28_095303) do
     t.string "refresh_token"
     t.index ["login_id"], name: "index_users_on_login_id", unique: true
   end
+
+  add_foreign_key "cards", "users"
 end
