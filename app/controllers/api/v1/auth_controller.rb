@@ -1,5 +1,7 @@
 # app/controllers/api/v1/auth_controller.rb
 class Api::V1::AuthController < ApplicationController
+  before_action :authorize_request, only: [ :logout ]
+
   def signup
     user = User.new(user_params)
 
