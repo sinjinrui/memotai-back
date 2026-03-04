@@ -16,8 +16,16 @@ class Card < ApplicationRecord
   end
   validates :text, length: { maximum: 140 }
 
-  acts_as_list scope: [ :user_id, :character_code, :enemy_code ]
+  acts_as_list scope: [
+    :user_id,
+    :character_code,
+    :enemy_code,
+    archived_at: nil
+  ]
 
   enumerize :character_code, in: CODE_LIST, scope: true # card.with_character_code("001")
   enumerize :enemy_code, in: CODE_LIST, scope: true # card.with_enemy_code("002")
+
+  scope :active, -> { where(archived_at: nil) }
+  scope :archived, -> { where.not(archived_at: nil) }
 end

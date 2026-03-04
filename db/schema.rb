@@ -19,10 +19,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_080240) do
     t.bigint "user_id", null: false
     t.string "character_code", null: false
     t.string "enemy_code", null: false
-    t.integer "position", default: 0, null: false
+    t.integer "position", default: 0
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["archived_at"], name: "index_cards_on_archived_at"
     t.index ["user_id", "character_code", "enemy_code", "position"], name: "idx_on_user_id_character_code_enemy_code_position_7b616b1da1"
     t.index ["user_id"], name: "index_cards_on_user_id"
   end
