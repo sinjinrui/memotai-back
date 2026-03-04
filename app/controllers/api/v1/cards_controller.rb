@@ -22,8 +22,12 @@ class Api::V1::CardsController < ApplicationController
     cards = current_user.cards
               .where(character_code: params[:character_code],
                     enemy_code: params[:enemy_code])
-              .order(:position)
 
+    if params[:archived] == "true"
+      cards = cards.archived.order(:archived_at)
+    else
+      cards = cards.active.order(:position)
+    end
     render json: cards
   end
 
@@ -35,6 +39,33 @@ class Api::V1::CardsController < ApplicationController
     else
       render json: { errors: card.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    card = current_user.cards.find(params[:id])
+    card.destroy
+    head :no_content
+  end
+
+  def archive
+    card = current_user.cards.active.find(params[:id])
+    card.update!(
+      archived_at: Time.current
+    )
+
+    render json: card
+  end
+
+  def restore
+    card = current_user.cards.archived.find(params[:id])
+
+    card.update!(
+      archived_at: nil
+    )
+
+    card.insert_at(1)
+
+    render json: card
   end
 
   private

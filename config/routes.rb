@@ -11,9 +11,11 @@ Rails.application.routes.draw do
       post "login", to: "auth#login"
       post "refresh", to: "auth#refresh"
       post "logout", to: "auth#logout"
-      resources :cards, only: [ :create, :index, :update ] do
+      resources :cards, only: [ :create, :index, :update, :destroy ] do
         member do
           patch :update_position
+          patch :archive
+          patch :restore
         end
       end
     end
