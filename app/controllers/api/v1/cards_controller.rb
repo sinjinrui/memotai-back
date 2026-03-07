@@ -18,18 +18,27 @@ class Api::V1::CardsController < ApplicationController
     head :ok
   end
 
-  def index
-    cards = current_user.cards
-              .where(character_code: params[:character_code],
-                    enemy_code: params[:enemy_code])
+def index
+  user_cards = current_user.cards.where(
+    character_code: params[:character_code],
+    enemy_code: params[:enemy_code]
+  )
 
-    if params[:archived] == "true"
-      cards = cards.archived.order(:archived_at)
+  if params[:archived] == "true"
+    cards = user_cards.archived.order(archived_at: :desc)
+  else
+    cursor_card = user_cards.find_by(id: params[:last_id]) rescue nil
+    cards = if cursor_card.present?
+      user_cards.active.where(position: (cursor_card.position + 1)..Float::INFINITY).order(:position)
     else
-      cards = cards.active.order(:position)
+      user_cards.active.order(:position)
     end
-    render json: cards
   end
+
+  cards = cards.limit(10)
+
+  render json: cards
+end
 
   def update
     card = current_user.cards.find(params[:id])
@@ -49,10 +58,8 @@ class Api::V1::CardsController < ApplicationController
 
   def archive
     card = current_user.cards.active.find(params[:id])
-    card.update!(
-      archived_at: Time.current
-    )
-
+    card.update!(archived_at: Time.current)
+    card.remove_from_list
     render json: card
   end
 
