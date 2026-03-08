@@ -20,7 +20,7 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def login
-    user = User.find_by(login_id: params[:login_id])
+    user = User.registered.find_by(login_id: params[:login_id])
 
     if user&.authenticate(params[:password])
       access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
@@ -57,9 +57,52 @@ class Api::V1::AuthController < ApplicationController
     }, status: :ok
   end
 
+  def guest_login
+    user = User.new(is_guest: true, login_id: "guest_#{SecureRandom.hex(8)}", password: SecureRandom.hex(16))
+
+    if user.save
+      access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
+      refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
+
+      render json: {
+        message: "User created",
+        access_token: access_token,
+        refresh_token: refresh_token
+      }, status: :created
+    else
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def migrate_account
+    user = User.new(user_params)
+
+    if user.save
+      ActiveRecord::Base.transaction do
+        Card.where(user_id: current_user.id).update_all(user_id: user.id)
+        current_user.destroy!
+      end
+
+      access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
+      refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
+
+      render json: {
+        message: "User migrated",
+        access_token: access_token,
+        refresh_token: refresh_token
+      }, status: :created
+    else
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def logout
     user = User.find_by(id: current_user.id)
-    user.update(refresh_token: nil)
+    if user.is_guest
+      user.destroy!
+    else
+      user.update(refresh_token: nil)
+    end
 
     render json: { message: "Logged out" }
   end

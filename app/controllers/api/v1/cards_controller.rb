@@ -18,27 +18,52 @@ class Api::V1::CardsController < ApplicationController
     head :ok
   end
 
-def index
-  user_cards = current_user.cards.where(
-    character_code: params[:character_code],
-    enemy_code: params[:enemy_code]
-  )
+  def index
+    user_cards = current_user.cards.where(
+      character_code: params[:character_code],
+      enemy_code: params[:enemy_code]
+    )
 
-  if params[:archived] == "true"
-    cards = user_cards.archived.order(archived_at: :desc)
-  else
     cursor_card = user_cards.find_by(id: params[:last_id]) rescue nil
-    cards = if cursor_card.present?
-      user_cards.active.where(position: (cursor_card.position + 1)..Float::INFINITY).order(:position)
+    if params[:archived] == "true"
+      cards = if cursor_card.present?
+        user_cards.archived .where(
+          "archived_at < ? OR (archived_at = ? AND id < ?)",
+          cursor_card.archived_at,
+          cursor_card.archived_at,
+          cursor_card.id
+        ).order(archived_at: :desc, id: :desc)
+      else
+        user_cards.archived.order(archived_at: :desc)
+      end
     else
-      user_cards.active.order(:position)
+      cards = if cursor_card.present?
+        user_cards.active.where(position: (cursor_card.position + 1)..Float::INFINITY).order(:position)
+      else
+        user_cards.active.order(:position)
+      end
     end
+
+    cards = cards.limit(11)
+
+    has_more = cards.length > 10
+    cards = cards.first(10)
+
+    render json: {
+      cards: cards,
+      has_more: has_more
+    }
   end
 
-  cards = cards.limit(10)
+  def share_cards
+    ids = Card.where.not(user_id: current_user.id).where(user_id: User.registered.ids)
+      .where(character_code: params[:character_code], enemy_code: params[:enemy_code])
+      .pluck(:id)
 
-  render json: cards
-end
+    cards = Card.where(id: ids.sample(10))
+
+    render json: cards
+  end
 
   def update
     card = current_user.cards.find(params[:id])
@@ -73,6 +98,19 @@ end
     card.insert_at(1)
 
     render json: card
+  end
+
+  def copy
+    origin_card = Card.find(params[:id])
+    new_card = Card.new(
+      text: origin_card.text,
+      character_code: origin_card.character_code,
+      enemy_code: origin_card.enemy_code,
+      user_id: current_user.id
+    )
+    new_card.save!
+    new_card.insert_at(1)
+    head :no_content
   end
 
   private
