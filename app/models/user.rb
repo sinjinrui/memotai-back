@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_many :cards
-  validates :login_id, presence: true, uniqueness: true
+  has_many :cards, dependent: :delete_all
+  validates :login_id, uniqueness: true
+
+  scope :registered, -> { where(is_guest: false) }
 end

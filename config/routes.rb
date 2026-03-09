@@ -11,11 +11,17 @@ Rails.application.routes.draw do
       post "login", to: "auth#login"
       post "refresh", to: "auth#refresh"
       post "logout", to: "auth#logout"
+      post "guest_login", to: "auth#guest_login"
+      post "migrate", to: "auth#migrate_account"
       resources :cards, only: [ :create, :index, :update, :destroy ] do
+        collection do
+          get :share_cards
+        end
         member do
           patch :update_position
           patch :archive
           patch :restore
+          post :copy
         end
       end
     end
