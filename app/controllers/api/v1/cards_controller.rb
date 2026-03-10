@@ -1,4 +1,6 @@
 class Api::V1::CardsController < ApplicationController
+  before_action :authorize_request
+
   def create
     card = Card.new(card_params)
     card.user_id = current_user.id
