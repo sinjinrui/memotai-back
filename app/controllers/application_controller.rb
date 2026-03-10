@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  before_action :verify_cloudfront
+
   def authorize_request
     header = request.headers["Authorization"]
     token = header.split(" ").last if header
@@ -12,5 +14,17 @@ class ApplicationController < ActionController::API
 
   def current_user
     @current_user
+  end
+
+  private
+
+  def verify_cloudfront
+    if Rails.env.production?
+      expected = ENV["CLOUDFRONT_SECRET"]
+
+      unless request.headers["CloudFront-Auth"] == expected
+        head :forbidden
+      end
+    end
   end
 end
