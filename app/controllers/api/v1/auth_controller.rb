@@ -1,6 +1,6 @@
 # app/controllers/api/v1/auth_controller.rb
 class Api::V1::AuthController < ApplicationController
-  before_action :authorize_request, only: [ :logout ]
+  before_action :authorize_request, only: [ :logout, :migrate_account ]
 
   def signup
     user = User.new(user_params)
@@ -8,6 +8,8 @@ class Api::V1::AuthController < ApplicationController
     if user.save
       access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
       refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
+
+      user.update_columns(refresh_token: refresh_token)
 
       render json: {
         message: "User created",
@@ -26,7 +28,7 @@ class Api::V1::AuthController < ApplicationController
       access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
       refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
 
-      user.update(refresh_token: refresh_token)
+      user.update_columns(refresh_token: refresh_token)
 
       render json: {
         access_token: access_token,
@@ -49,7 +51,7 @@ class Api::V1::AuthController < ApplicationController
     new_access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
     new_refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
 
-    user.update!(refresh_token: new_refresh_token)
+    user.update_columns(refresh_token: new_refresh_token)
 
     render json: {
       access_token: new_access_token,
@@ -58,11 +60,13 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def guest_login
-    user = User.new(is_guest: true, login_id: "guest_#{SecureRandom.hex(8)}", password: SecureRandom.hex(16))
+    user = User.new(is_guest: true, login_id: "guest_#{SecureRandom.hex(4)}", password: SecureRandom.hex(16))
 
     if user.save
       access_token = JsonWebToken.encode({ user_id: user.id }, 15.minutes.from_now)
       refresh_token = JsonWebToken.encode({ user_id: user.id }, 30.days.from_now)
+
+      user.update_columns(refresh_token: refresh_token)
 
       render json: {
         message: "User created",
@@ -101,7 +105,7 @@ class Api::V1::AuthController < ApplicationController
     if user.is_guest
       user.destroy!
     else
-      user.update(refresh_token: nil)
+      user.update_columns(refresh_token: nil)
     end
 
     render json: { message: "Logged out" }
