@@ -1,5 +1,5 @@
 class Api::V1::CardsController < ApplicationController
-  before_action :authorize_request
+  before_action :authorize_request, except: [ :share_cards ]
 
   def create
     card = Card.new(card_params)
@@ -58,11 +58,20 @@ class Api::V1::CardsController < ApplicationController
   end
 
   def share_cards
-    ids = Card.where.not(user_id: current_user.id).where(user_id: User.registered.ids)
+    cards = Card
+      .where(user_id: User.registered.ids)
       .where(character_code: params[:character_code], enemy_code: params[:enemy_code])
-      .pluck(:id)
+      .order(Arel.sql("
+        (
+          LOG(LEAST(copy_count, 50) + 1) * 4
+          + 100 / (EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600 + 2)
+          + (CASE WHEN copy_count = 0 THEN 1 ELSE 0 END)
+          + RANDOM() * 2
+        ) DESC
+      "))
+      .limit(10)
 
-    cards = Card.where(id: ids.sample(10))
+    cards = cards.where.not(user_id: current_user.id) if current_user
 
     render json: cards
   end
@@ -110,8 +119,10 @@ class Api::V1::CardsController < ApplicationController
       enemy_code: origin_card.enemy_code,
       user_id: current_user.id
     )
-    new_card.save!
-    new_card.insert_at(1)
+    if new_card.save!
+      new_card.insert_at(1)
+      origin_card.update!(copy_count: origin_card.copy_count + 1) unless current_user.is_guest
+    end
     head :no_content
   end
 
