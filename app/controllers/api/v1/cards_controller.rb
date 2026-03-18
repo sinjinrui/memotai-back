@@ -58,6 +58,12 @@ class Api::V1::CardsController < ApplicationController
   end
 
   def share_cards
+    header = request.headers["Authorization"]
+    token = header.split(" ").last if header
+
+    decoded = JsonWebToken.decode(token)
+    current_user = User.registered.find_by(id: decoded[:user_id]) if decoded
+
     cards = Card
       .where(user_id: User.registered.ids)
       .where(character_code: params[:character_code], enemy_code: params[:enemy_code])
