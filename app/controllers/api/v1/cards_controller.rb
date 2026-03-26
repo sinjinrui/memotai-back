@@ -9,7 +9,7 @@ class Api::V1::CardsController < ApplicationController
       card.insert_at(1)
       render json: card
     else
-      render json: { errors: card.errors }, status: :unprocessable_entity
+      render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
     end
   end
 
@@ -50,11 +50,16 @@ class Api::V1::CardsController < ApplicationController
 
     has_more = cards.length > 10
     cards = cards.first(10)
+    cards_json = cards.map do |card|
+      { id: card.id, text: card.text }
+    end
 
     render json: {
-      cards: cards,
+      cards: cards_json,
       has_more: has_more
-    }
+    }, status: 200
+  rescue => e
+    render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
   end
 
   def share_cards
@@ -76,8 +81,12 @@ class Api::V1::CardsController < ApplicationController
       .limit(10)
 
     cards = cards.where.not(user_id: current_user.id) if current_user
-
-    render json: cards
+    cards_json = cards.map do |card|
+      { id: card.id, text: card.text }
+    end
+    render json: { cards: cards_json }, status: 200
+  rescue => e
+    render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
   end
 
   def update
