@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       resources :cards, only: [ :create, :index, :update, :destroy ] do
         collection do
           get :share_cards
+          get :topic_cards
         end
         member do
           patch :update_position
