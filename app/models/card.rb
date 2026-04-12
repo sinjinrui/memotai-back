@@ -8,6 +8,7 @@ class Card < ApplicationRecord
   ].freeze
 
   belongs_to :user
+  has_many :report_cards
 
   with_options presence: true do
     validates :user_id

@@ -25,6 +25,7 @@ Rails.application.routes.draw do
           post :copy
         end
       end
+      resources :report_cards, only: [ :create ]
     end
   end
 end
