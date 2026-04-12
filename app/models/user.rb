@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password
 
   has_many :cards, dependent: :delete_all
+  has_many :report_cards, dependent: :delete_all
   validates :login_id,
     presence: true,
     length: { in: 4..16 },
