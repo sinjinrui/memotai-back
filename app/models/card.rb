@@ -16,6 +16,10 @@ class Card < ApplicationRecord
     validates :enemy_code
   end
   validates :text, length: { maximum: 140 }
+  validates :embed_url, format: {
+    with: /\A(https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=|youtu\.be\/|x\.com\/\w+\/status\/)[\w\-?=&]+)/,
+    message: "はYouTubeまたはXのURLを入力してください"
+  }, allow_blank: true
 
   acts_as_list scope: [
     :user_id,

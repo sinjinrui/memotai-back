@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_12_051849) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_18_080503) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_12_051849) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "copy_count", default: 0
+    t.string "embed_url"
     t.index ["archived_at"], name: "index_cards_on_archived_at"
     t.index ["user_id", "character_code", "enemy_code", "position"], name: "idx_on_user_id_character_code_enemy_code_position_7b616b1da1"
     t.index ["user_id"], name: "index_cards_on_user_id"

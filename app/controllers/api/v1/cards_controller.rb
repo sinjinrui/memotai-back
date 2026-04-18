@@ -51,7 +51,7 @@ class Api::V1::CardsController < ApplicationController
     has_more = cards.length > 10
     cards = cards.first(10)
     cards_json = cards.map do |card|
-      { id: card.id, text: card.text }
+      { id: card.id, text: card.text, embed_url: card.embed_url }
     end
 
     render json: {
@@ -82,7 +82,7 @@ class Api::V1::CardsController < ApplicationController
 
     cards = cards.where.not(user_id: current_user.id) if current_user
     cards_json = cards.map do |card|
-      { id: card.id, text: card.text }
+      { id: card.id, text: card.text, embed_url: card.embed_url }
     end
     render json: { cards: cards_json }, status: 200
   rescue => e
@@ -108,7 +108,7 @@ class Api::V1::CardsController < ApplicationController
 
     cards = cards.where.not(user_id: current_user.id) if current_user
     cards_json = cards.map do |card|
-      { id: card.id, text: card.text, character_code: card.character_code, enemy_code: card.enemy_code }
+      { id: card.id, text: card.text, embed_url: card.embed_url, character_code: card.character_code, enemy_code: card.enemy_code }
     end
     render json: { cards: cards_json }, status: 200
   rescue => e
@@ -171,7 +171,8 @@ class Api::V1::CardsController < ApplicationController
     params.require(:card).permit(
       :text,
       :character_code,
-      :enemy_code
+      :enemy_code,
+      :embed_url
     )
   end
 end
