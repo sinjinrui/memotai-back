@@ -17,7 +17,7 @@ class Card < ApplicationRecord
   end
   validates :text, length: { maximum: 140 }
   validates :embed_url, format: {
-    with: /\A(https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/live\/|youtube\.com\/shorts\/|x\.com\/\w+\/status\/)[\w\-?=&]+)/,
+    with: /\A(https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/live\/|youtube\.com\/shorts\/|x\.com\/\w+\/status\/)[\w\-?=&]+)\z/,
     message: "はYouTubeまたはXのURLを入力してください"
   }, allow_blank: true
 
