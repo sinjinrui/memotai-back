@@ -72,9 +72,10 @@ class Api::V1::CardsController < ApplicationController
       .where(character_code: params[:character_code], enemy_code: params[:enemy_code])
       .order(Arel.sql("
         (
-          LOG(LEAST(copy_count, 50) + 1) * 4
+          LOG(LEAST(copy_count, 50) + 1) * 5.32
           + 100 / (EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600 + 2)
           + (CASE WHEN copy_count = 0 THEN 1 ELSE 0 END)
+          + (CASE WHEN embed_url IS NOT NULL AND embed_url != '' THEN 1.5 ELSE 0 END)
           + RANDOM() * 2
         ) DESC
       "))
@@ -98,9 +99,10 @@ class Api::V1::CardsController < ApplicationController
       .where(user_id: User.registered.ids)
       .order(Arel.sql("
         (
-          LOG(LEAST(copy_count, 50) + 1) * 2
+          LOG(LEAST(copy_count, 50) + 1) * 5.86
           + 200 / (EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600 + 1.5)
           + (CASE WHEN copy_count = 0 THEN 2 ELSE 0 END)
+          + (CASE WHEN embed_url IS NOT NULL AND embed_url != '' THEN 5 ELSE 0 END)
           + RANDOM() * 1.5
         ) DESC
       "))
