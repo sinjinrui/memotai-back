@@ -1,6 +1,6 @@
 # app/controllers/api/v1/auth_controller.rb
 class Api::V1::AuthController < ApplicationController
-  before_action :authorize_request, only: [ :logout, :migrate_account ]
+  before_action :authorize_request, only: [ :logout, :migrate_account, :change_password ]
 
   def signup
     user = User.new(user_params)
@@ -14,7 +14,8 @@ class Api::V1::AuthController < ApplicationController
       render json: {
         message: "User created",
         access_token: access_token,
-        refresh_token: refresh_token
+        refresh_token: refresh_token,
+        login_id: user.is_guest ? "" : user.login_id
       }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
@@ -32,7 +33,8 @@ class Api::V1::AuthController < ApplicationController
 
       render json: {
         access_token: access_token,
-        refresh_token: refresh_token
+        refresh_token: refresh_token,
+        login_id: user.is_guest ? "" : user.login_id
       }, status: :ok
     else
       render json: { error: "Invalid credentials" }, status: :unauthorized
@@ -55,7 +57,8 @@ class Api::V1::AuthController < ApplicationController
 
     render json: {
       access_token: new_access_token,
-      refresh_token: new_refresh_token
+      refresh_token: new_refresh_token,
+      login_id: user.is_guest ? "" : user.login_id
     }, status: :ok
   end
 
@@ -93,10 +96,23 @@ class Api::V1::AuthController < ApplicationController
       render json: {
         message: "User migrated",
         access_token: access_token,
-        refresh_token: refresh_token
+        refresh_token: refresh_token,
+        login_id: user.is_guest ? "" : user.login_id
       }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def change_password
+    unless current_user.authenticate(params[:current_password])
+      return render json: { message: "現在のパスワードが正しくありません" }, status: :unauthorized
+    end
+
+    if current_user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+      render json: { message: "パスワードを変更しました" }, status: :ok
+    else
+      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

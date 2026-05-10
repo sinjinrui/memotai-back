@@ -13,10 +13,13 @@ Rails.application.routes.draw do
       post "logout", to: "auth#logout"
       post "guest_login", to: "auth#guest_login"
       post "migrate", to: "auth#migrate_account"
+      put "change_password", to: "auth#change_password"
       resources :cards, only: [ :create, :index, :update, :destroy ] do
         collection do
           get :share_cards
           get :topic_cards
+          get :combination_counts
+          get :combination_ranking
         end
         member do
           patch :update_position
