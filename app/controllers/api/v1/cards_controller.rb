@@ -62,6 +62,54 @@ class Api::V1::CardsController < ApplicationController
     render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
   end
 
+  def combination_counts
+    combinations = current_user.cards
+      .group(:character_code, :enemy_code)
+      .select(
+        "character_code, enemy_code, " \
+        "COUNT(*) FILTER (WHERE archived_at IS NULL) AS active_count, " \
+        "COUNT(*) FILTER (WHERE archived_at IS NOT NULL) AS archived_count, " \
+        "MAX(created_at) AS latest_card_at"
+      )
+      .order(Arel.sql("COUNT(*) DESC, latest_card_at DESC"))
+      .limit(5)
+
+    render json: combinations.map { |c|
+      {
+        character_code: c.character_code,
+        enemy_code: c.enemy_code,
+        active_count: c.active_count,
+        archived_count: c.archived_count
+      }
+    }, status: :ok
+  rescue => e
+    render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
+  end
+
+  def combination_ranking
+    combinations = Card
+      .where(user_id: User.registered.ids)
+      .where.not(user_id: current_user.id)
+      .group(:character_code, :enemy_code)
+      .select(
+        "character_code, enemy_code, " \
+        "COUNT(*) AS card_count, " \
+        "MAX(created_at) AS latest_card_at"
+      )
+      .order(Arel.sql("COUNT(*) DESC, latest_card_at DESC"))
+      .limit(5)
+
+    render json: combinations.map { |c|
+      {
+        character_code: c.character_code,
+        enemy_code: c.enemy_code,
+        card_count: c.card_count
+      }
+    }, status: :ok
+  rescue => e
+    render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
+  end
+
   def share_cards
     refresh_token = params[:refresh_token]
     decoded = refresh_token.present? ? JsonWebToken.decode(refresh_token) : nil
