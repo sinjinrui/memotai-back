@@ -8,6 +8,40 @@ class Card < ApplicationRecord
     000
   ].freeze
 
+  CHARACTER_NAMES = {
+    "000" => "COMMON",
+    "001" => "RYU",
+    "002" => "LUKE",
+    "003" => "JAMIE",
+    "004" => "CHUN-LI",
+    "005" => "GUILE",
+    "006" => "KIMBERLY",
+    "007" => "JURI",
+    "008" => "KEN",
+    "009" => "BLANKA",
+    "010" => "DHALSIM",
+    "011" => "E.HONDA",
+    "012" => "DEE JAY",
+    "013" => "MANON",
+    "014" => "MARISA",
+    "015" => "JP",
+    "016" => "ZANGIEF",
+    "017" => "LILY",
+    "018" => "CAMMY",
+    "019" => "RASHID",
+    "020" => "A.K.I.",
+    "021" => "ED",
+    "022" => "GOUKI",
+    "023" => "VEGA",
+    "024" => "TERRY",
+    "025" => "MAI",
+    "026" => "ELENA",
+    "027" => "SAGAT",
+    "028" => "C.VIPER",
+    "029" => "ALEX",
+    "030" => "INGRID"
+  }.freeze
+
   belongs_to :user
   has_many :report_cards
 

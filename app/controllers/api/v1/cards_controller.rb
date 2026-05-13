@@ -54,9 +54,16 @@ class Api::V1::CardsController < ApplicationController
       { id: card.id, text: card.text, embed_url: card.embed_url }
     end
 
+    matchup = MatchupDiagram.find_by(
+      character_code: params[:character_code],
+      enemy_code: params[:enemy_code],
+      rank: current_user&.rank || "Master"
+    )
+
     render json: {
       cards: cards_json,
-      has_more: has_more
+      has_more: has_more,
+      win_rate: matchup&.win_rate
     }, status: 200
   rescue => e
     render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
@@ -74,12 +81,16 @@ class Api::V1::CardsController < ApplicationController
       .order(Arel.sql("COUNT(*) DESC, latest_card_at DESC"))
       .limit(5)
 
-    render json: combinations.map { |c|
-      {
-        character_code: c.character_code,
-        enemy_code: c.enemy_code,
-        active_count: c.active_count,
-        archived_count: c.archived_count
+    render json: {
+      login_id: current_user.login_id,
+      rank: current_user.rank,
+      combinations: combinations.map { |c|
+        {
+          character_code: c.character_code,
+          enemy_code: c.enemy_code,
+          active_count: c.active_count,
+          archived_count: c.archived_count
+        }
       }
     }, status: :ok
   rescue => e
@@ -133,7 +144,14 @@ class Api::V1::CardsController < ApplicationController
     cards_json = cards.map do |card|
       { id: card.id, text: card.text, embed_url: card.embed_url }
     end
-    render json: { cards: cards_json }, status: 200
+
+    matchup = MatchupDiagram.find_by(
+      character_code: params[:character_code],
+      enemy_code: params[:enemy_code],
+      rank: current_user&.rank || "Master"
+    )
+
+    render json: { cards: cards_json, win_rate: matchup&.win_rate }, status: 200
   rescue => e
     render json: { message: "一時的なエラーが発生しました。時間をおいてお試しください。" }, status: :unprocessable_entity
   end
