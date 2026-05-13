@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_18_080503) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_13_151340) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,6 +30,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_18_080503) do
     t.index ["user_id"], name: "index_cards_on_user_id"
   end
 
+  create_table "matchup_diagrams", force: :cascade do |t|
+    t.string "rank", null: false
+    t.string "character_code", null: false
+    t.string "enemy_code", null: false
+    t.decimal "win_rate", precision: 5, scale: 3, null: false
+    t.string "season", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["character_code", "enemy_code", "rank"], name: "index_matchup_diagrams_on_codes_and_rank", unique: true
+  end
+
   create_table "report_cards", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "card_id", null: false
@@ -47,6 +58,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_18_080503) do
     t.datetime "updated_at", null: false
     t.string "refresh_token"
     t.boolean "is_guest", default: false
+    t.string "rank"
     t.index ["login_id"], name: "index_users_on_login_id"
   end
 

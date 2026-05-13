@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       post "guest_login", to: "auth#guest_login"
       post "migrate", to: "auth#migrate_account"
       put "change_password", to: "auth#change_password"
+      put "change_rank", to: "auth#change_rank"
       resources :cards, only: [ :create, :index, :update, :destroy ] do
         collection do
           get :share_cards

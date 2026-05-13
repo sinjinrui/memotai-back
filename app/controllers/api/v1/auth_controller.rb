@@ -1,6 +1,6 @@
 # app/controllers/api/v1/auth_controller.rb
 class Api::V1::AuthController < ApplicationController
-  before_action :authorize_request, only: [ :logout, :migrate_account, :change_password ]
+  before_action :authorize_request, only: [ :logout, :migrate_account, :change_password, :change_rank ]
 
   def signup
     user = User.new(user_params)
@@ -111,6 +111,14 @@ class Api::V1::AuthController < ApplicationController
 
     if current_user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
       render json: { message: "パスワードを変更しました" }, status: :ok
+    else
+      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def change_rank
+    if current_user.update(rank: params[:rank])
+      render json: { message: "ランクを変更しました", rank: current_user.rank }, status: :ok
     else
       render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
     end
