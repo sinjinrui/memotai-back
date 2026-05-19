@@ -1,5 +1,5 @@
 class Api::V1::CardsController < ApplicationController
-  before_action :authorize_request, except: [ :share_cards, :topic_cards ]
+  before_action :authorize_request, except: [ :share_cards, :topic_cards, :combination_ranking ]
 
   def create
     card = Card.new(card_params)
@@ -100,7 +100,7 @@ class Api::V1::CardsController < ApplicationController
   def combination_ranking
     combinations = Card
       .where(user_id: User.registered.ids)
-      .where.not(user_id: current_user.id)
+      .then { |q| current_user ? q.where.not(user_id: current_user.id) : q }
       .group(:character_code, :enemy_code)
       .select(
         "character_code, enemy_code, " \
