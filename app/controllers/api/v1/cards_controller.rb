@@ -21,10 +21,15 @@ class Api::V1::CardsController < ApplicationController
   end
 
   def index
-    user_cards = current_user.cards.where(
+    user_cards = current_user.cards.preload(:tags)
+    .where(
       character_code: params[:character_code],
       enemy_code: params[:enemy_code]
     )
+
+    if params[:tag_ids].present?
+      user_cards = user_cards.joins(:tags).where("tags.id": params[:tag_ids])
+    end
 
     cursor_card = user_cards.find_by(id: params[:last_id]) rescue nil
     if params[:archived] == "true"
@@ -51,7 +56,7 @@ class Api::V1::CardsController < ApplicationController
     has_more = cards.length > 10
     cards = cards.first(10)
     cards_json = cards.map do |card|
-      { id: card.id, text: card.text, embed_url: card.embed_url }
+      { id: card.id, text: card.text, embed_url: card.embed_url, tags: card.tags.sort_by(&:id).map { |tag| { id: tag.id, name: tag.name } } }
     end
 
     matchup = MatchupDiagram.find_by(
@@ -185,8 +190,10 @@ class Api::V1::CardsController < ApplicationController
 
   def update
     card = current_user.cards.find(params[:id])
-
-    if card.update(card_params)
+    card.assign_attributes(card_params)
+    tags = Tag.where(id: params[:card][:tag_ids], user_id: [ current_user.id, nil ])
+    card.tags = tags
+    if card.save
       render json: card, status: :ok
     else
       render json: { errors: card.errors.full_messages }, status: :unprocessable_entity
@@ -240,7 +247,8 @@ class Api::V1::CardsController < ApplicationController
       :text,
       :character_code,
       :enemy_code,
-      :embed_url
+      :embed_url,
+      tag_ids: []
     )
   end
 end

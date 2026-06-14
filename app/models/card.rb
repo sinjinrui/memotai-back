@@ -44,6 +44,8 @@ class Card < ApplicationRecord
 
   belongs_to :user
   has_many :report_cards
+  has_many :card_tags, dependent: :destroy
+  has_many :tags, through: :card_tags
 
   with_options presence: true do
     validates :user_id

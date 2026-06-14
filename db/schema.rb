@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_13_151340) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_14_092211) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "card_tags", force: :cascade do |t|
+    t.bigint "tag_id"
+    t.bigint "card_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["card_id"], name: "index_card_tags_on_card_id"
+    t.index ["tag_id"], name: "index_card_tags_on_tag_id"
+  end
 
   create_table "cards", force: :cascade do |t|
     t.text "text", null: false
@@ -51,6 +60,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_13_151340) do
     t.index ["user_id"], name: "index_report_cards_on_user_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_tags_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "login_id", null: false
     t.string "password_digest", null: false
@@ -62,6 +79,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_13_151340) do
     t.index ["login_id"], name: "index_users_on_login_id"
   end
 
+  add_foreign_key "card_tags", "cards"
+  add_foreign_key "card_tags", "tags"
   add_foreign_key "cards", "users"
   add_foreign_key "report_cards", "cards"
   add_foreign_key "report_cards", "users"
