@@ -12,6 +12,7 @@ class User < ApplicationRecord
 
   has_many :cards, dependent: :delete_all
   has_many :report_cards, dependent: :delete_all
+  has_many :tags, dependent: :destroy
   validates :login_id,
     presence: true,
     length: { in: 4..16 },

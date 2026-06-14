@@ -30,6 +30,7 @@ Rails.application.routes.draw do
         end
       end
       resources :report_cards, only: [ :create ]
+      resources :tags, only: [ :index ]
     end
   end
 end
